@@ -1,0 +1,16 @@
+{
+  "name": "tvos-oauth-flow",
+  "version": "0.1.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Michiel De Mey <de.mey.michiel@gmail.com> (http://demey.io)",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.15.0",
+    "compression": "^1.6.1",
+    "request": "^2.69.0"
+  }
+}
