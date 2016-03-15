@@ -7,6 +7,7 @@ const compression = require('compression')
 
 const Key = require('./lib/key')
 const QR  = require('./lib/qr')
+const DB  = require('./lib/db')
 
 const PORT = process.argv.PORT || 3000
 const app = express()
@@ -21,11 +22,6 @@ app.disable('x-powered-by')
 app.use(compression())
 app.use(bodyParser.json())
 
-// In-memory database :)
-let keys = {}
-// TODO: Implement nonce to prevent replay attacks
-let nonce = []
-
 // Generate a new unique key
 app.post('/key/generate', (req, res) => {
   const secret = req.body.secret
@@ -34,14 +30,9 @@ app.post('/key/generate', (req, res) => {
   let key
   do
     key = new Key().valueOf()
-  while (!!keys[key])
+  while (!!DB.getKey(key))
 
-  keys[key] = { secret: secret }
-
-  setTimeout(() => {
-    delete keys[key]
-  }, 60 * 1000) // Key TTL
-
+  DB.setKey(key, { secret })
 
   res.status(202).json({
     key,
@@ -56,17 +47,21 @@ app.post('/key/:key', (req, res) => {
   const nonce = req.body.nonce
   const key = req.params.key
 
+  const dbKey = DB.getKey(key)
+
   if (!nonce) return res.status(400).end()
-  if (!keys[key]) return res.status(404).end()
-  if (!secret || secret != keys[key].secret) return res.status(401).end()
+  if (DB.hasNonce(nonce)) return res.status(400).end()
+  DB.addNonce(nonce)
+  if (!dbKey) return res.status(404).end()
+  if (!secret || secret != dbKey.secret) return res.status(401).end()
 
-  if (!keys[key].token) return res.status(202).end()
+  if (!dbKey.token) return res.status(202).end()
 
-  if (keys[key].token) {
+  if (dbKey.token) {
     res.type('text/plain')
-    res.send(keys[key].token)
+    res.send(dbKey.token)
 
-    return delete keys[key]
+    return DB.removeKey(key)
   }
 })
 
@@ -103,12 +98,11 @@ app.get('/key/connect', (req, res) => {
 
   request(options, (error, data) => {
     if (error) {
-      delete keys[key]
+      DB.removeKey(key)
       return res.status(500).end()
     }
 
-    keys[key].token = data.body.access_token
-
+    DB.setToken(key, data.body.access_token)
     res.send('Logging you in..')
   })
 
