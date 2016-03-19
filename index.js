@@ -25,6 +25,10 @@ app.get('/key/connect', require('./controllers/connect'))
 // Used by TvOS to get the key status
 app.post('/key/:key', require('./controllers/status'))
 
+
+// Alias
+app.get('/activate', (req, res) => { res.redirect('/activate.html') })
+
 app.listen(PORT, () => {
   console.log(`Listening on port  ${PORT}`)
 })
