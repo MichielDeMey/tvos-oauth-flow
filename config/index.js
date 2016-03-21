@@ -2,6 +2,7 @@
 
 module.exports = {
   baseUrl : process.env.BASEURL || 'http://127.0.0.1:3000',
+  keyTTL: 120,                                                        // seconds
   soundcloud: {
     connectUri   : 'https://soundcloud.com/connect',
     tokenUri     : 'https://api.soundcloud.com/oauth2/token',
