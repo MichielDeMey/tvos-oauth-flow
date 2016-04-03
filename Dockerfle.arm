@@ -1,0 +1,10 @@
+FROM justincormack/armhf-alpine:3.3
+MAINTAINER Michiel De Mey <de.mey.michiel@gmail.com>
+
+ADD . .
+
+RUN apk update && apk add nodejs
+RUN ["npm", "install"]
+CMD ["npm", "start"]
+
+EXPOSE 3000
